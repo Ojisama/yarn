@@ -1,0 +1,59 @@
+kind: pipeline
+name: Yarn test
+
+steps:
+  - name: restore-cache
+    image: drillster/drone-volume-cache
+    volumes:
+    - name: cache
+      path: /cache
+    settings:
+      restore: true
+      mount:
+        - ./node_modules
+  - name: install
+    image: yarnpkg/dev:latest
+    commands:
+      - ls -lah | grep node_modules
+      - yarn install --frozen-lockfile
+    depends_on:
+      - restore-cache
+  - name: testing
+    image: yarnpkg/dev:latest
+    commands:
+      - ls -lah | grep node_modules
+      - yarn
+      - ls -lah | grep node_modules
+    depends_on:
+      - install
+
+  - name: linting
+    image: yarnpkg/dev:latest
+    commands:
+      - yarn lint
+    depends_on:
+      - install
+
+  - name: build
+    image: yarnpkg/dev:latest
+    commands:
+      - yarn build
+    depends_on:
+      - linting
+      - testing
+  - name: rebuild-cache
+    image: drillster/drone-volume-cache
+    volumes:
+    - name: cache
+      path: /cache
+    settings:
+      rebuild: true
+      mount:
+        - ./node_modules
+    depends_on:
+      - install
+
+volumes:
+  - name: cache
+    host: 
+      path: /tmp/cache
