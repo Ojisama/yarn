@@ -1,0 +1,12 @@
+name: Run GitHubAction Workflow
+on: push
+jobs:
+  Do_Stuff:
+    name: Do stuff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - run: |
+          yarn
+          yarn build
+          yarn lint
